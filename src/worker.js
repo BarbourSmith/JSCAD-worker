@@ -29,13 +29,9 @@ const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/mod
 
 
 function circ(values){
-	console.log(values)
 	var myCircle = colorize([1, 0, 0, 0.75],circle({ radius: values[0]}))
 	console.log(myCircle)
 	var serializedCircle = jsonSerializer.serialize({}, myCircle)
-	console.log(serializedCircle)
-	var deserializedCircle = jsonDeSerializer.deserialize({output: 'geometry'}, serializedCircle)
-	console.log(deserializedCircle)
 	return serializedCircle
 }
 
@@ -65,9 +61,9 @@ function extr(values){
 	return serializedResult
 }
 function rotat(values){
-	
 	let geometry = values[0]
-	const rotatedObj = rotate([Math.PI / values[1],values[2],values[3]], geometry)
+	var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, geometry)
+	const rotatedObj = rotate([Math.PI / values[1],values[2],values[3]], deserializedGeometry)
 	var serializedResult = jsonSerializer.serialize({}, rotatedObj)
 	return serializedResult
 }
@@ -75,8 +71,8 @@ function rotat(values){
 function trans(values){
 	
 	let geometry = values[0]
-	//var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, jsonGeometry)
-	const translatedObj = translate([values[1],values[2],values[3]], geometry)
+	var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, geometry)
+	const translatedObj = translate([values[1],values[2],values[3]], deserializedGeometry)
 	//translate([10, 5, 0], [jscad.primitives.cylinder({ radius: 0.5, segments: 64 })])
 	var serializedResult = jsonSerializer.serialize({}, translatedObj)
 	return serializedResult	
