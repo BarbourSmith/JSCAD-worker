@@ -31,7 +31,7 @@ const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/mod
 
 
 function circ(values){
-	var myCircle = colorize([1, 0, 0, 0.75],circle({ radius: values[0]}))
+	var myCircle = circle({ radius: values[0]})
 	var serializedCircle = jsonSerializer.serialize({}, myCircle)
 	return serializedCircle
 }
@@ -112,6 +112,17 @@ function assembly(values){
 }
 
 
+//Just a placeholder for now
+function specify(values){
+    return values[0]
+}
+
+//Just a placeholder for now
+function tag(values){
+    return values[0]
+}
+
+
 // create a worker and register public functions
 workerpool.worker({
     assemble: assembly,
@@ -119,6 +130,8 @@ workerpool.worker({
     difference: diff,
     intersection:intersection,
     hull:wrap,
+    specify: specify,
+    tag, tag,
  	translate: trans,
  	rectangle: rect,
  	extrude: extr,
