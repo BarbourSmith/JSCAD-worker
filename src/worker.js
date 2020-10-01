@@ -24,7 +24,7 @@ const {
 
 const { cuboid, sphere, cylinder, circle, star, rectangle } = require('@jscad/modeling').primitives
 const { translate, rotate, scale } = transforms
-const { hullChain } = hulls
+const { hull } = hulls
 const { union, subtract, intersect} = booleans
 const { colorize } = require('@jscad/modeling').colors
 const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/modeling').extrusions
@@ -97,18 +97,25 @@ function intersection(values){
 function wrap(values){
 	var deserializedGeometry = values.map(x => jsonDeSerializer.deserialize({output: 'geometry'}, x))
     
-    console.log("Deserialized geometry: ")
-    console.log(deserializedGeometry)
-    
-    const hullObj = hullChain(deserializedGeometry)
+    const hullObj = hull(deserializedGeometry)
     
 	var serializedResult = jsonSerializer.serialize({}, hullObj)
+	return serializedResult
+}
+
+function assembly(values){
+	var deserializedGeometry = values[0].map(x => jsonDeSerializer.deserialize({output: 'geometry'}, x))
+    
+    const unionObj = union(deserializedGeometry)
+    
+	var serializedResult = jsonSerializer.serialize({}, unionObj)
 	return serializedResult
 }
 
 
 // create a worker and register public functions
 workerpool.worker({
+    assemble: assembly,
  	circle: circ,
     difference: diff,
     intersection:intersection,
