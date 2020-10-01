@@ -62,9 +62,8 @@ function extr(values){
 }
 
 function rotat(values){
-	let geometry = values[0]
-	var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, geometry)
-	const rotatedObj = rotate([Math.PI / values[1],values[2],values[3]], deserializedGeometry)
+	var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, values[0])
+	const rotatedObj = rotate([3.1415*values[1]/180,3.1415*values[2]/180,3.1415*values[3]/180], deserializedGeometry)
 	var serializedResult = jsonSerializer.serialize({}, rotatedObj)
 	return serializedResult
 }
