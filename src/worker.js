@@ -31,7 +31,7 @@ const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/mod
 
 
 function circ(values){
-	var myCircle = circle({ radius: values[0]})
+	var myCircle = circle({ radius: values[0]/2})
 	var serializedCircle = jsonSerializer.serialize({}, myCircle)
 	return serializedCircle
 }
@@ -111,6 +111,38 @@ function assembly(values){
 	return serializedResult
 }
 
+function code(values){
+    
+    inputs = {};
+    for (key in values[1]) {
+      if (values[1][key] != null && typeof values[1][key] === 'object') {
+        inputs[key] = jsonDeSerializer.deserialize({output: 'geometry'}, values[1][key])
+      } else {
+        inputs[key] = values[1][key];
+      }
+    }
+    
+    //These actions are available in the context that the code is executed in
+    
+    inputs["translate"] = translate
+    inputs["sphere"] = sphere
+    inputs["rotate"] = rotate
+    inputs["scale"] = scale
+    inputs["union"] = union
+    inputs["subtract"] = subtract
+    inputs["intersect"] = intersect
+    
+    //Evaluate the code in the created context
+    const signature =
+      '{ ' +
+      Object.keys(inputs).join(', ') +
+      ' }';
+    const foo = new Function(signature, values[0]);
+    const returnedGeometry = foo({...inputs });
+    
+    var serializedResult = jsonSerializer.serialize({}, returnedGeometry)
+	return serializedResult
+}
 
 //Just a placeholder for now
 function specify(values){
@@ -121,17 +153,23 @@ function specify(values){
 function tag(values){
     return values[0]
 }
+//Just a placeholder for now
+function clr(values){
+    return values[0]
+}
 
 
 // create a worker and register public functions
 workerpool.worker({
     assemble: assembly,
  	circle: circ,
+ 	code: code,
     difference: diff,
     intersection:intersection,
     hull:wrap,
     specify: specify,
     tag, tag,
+    color: clr,
  	translate: trans,
  	rectangle: rect,
  	extrude: extr,
