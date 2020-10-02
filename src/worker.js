@@ -1,6 +1,7 @@
 const jscad = require('@jscad/modeling');
 const jsonSerializer= require('@jscad/json-serializer');
 const jsonDeSerializer = require('@jscad/json-deserializer')
+const stlSerializer = require('@jscad/stl-serializer')
 
 
 const workerpool = require('workerpool');
@@ -158,6 +159,15 @@ function clr(values){
     return values[0]
 }
 
+function stl(values){
+    
+    var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, values[0])
+    
+    const rawData = stlSerializer.serialize({binary: false},deserializedGeometry)
+    
+    return rawData
+}
+
 
 // create a worker and register public functions
 workerpool.worker({
@@ -168,6 +178,7 @@ workerpool.worker({
     intersection:intersection,
     hull:wrap,
     specify: specify,
+    stl:stl,
     tag, tag,
     color: clr,
  	translate: trans,
