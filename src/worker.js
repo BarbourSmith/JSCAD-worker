@@ -32,15 +32,15 @@ const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/mod
 
 
 function circ(values){
-	var myCircle = circle({ radius: values[0]/2})
+	var myCircle = circle({ radius: values[0]/2, segments: values[1]})
 	var serializedCircle = jsonSerializer.serialize({}, myCircle)
-	return serializedCircle
+	return {geometry: serializedCircle, tags: []}
 }
 
 function rect(values){
 	var myCube = rectangle({size: values})
 	var serializedCube = jsonSerializer.serialize({}, myCube)
-	return serializedCube
+	return {geometry: serializedCube, tags: []}
 }
 
 //not working
@@ -54,53 +54,52 @@ function poly(values){
 }
 
 function extr(values){
-
-	let geometry = values[0]
+	let geometry = values[0][0].geometry
 	var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, geometry)
 	const extrudedObj = extrudeLinear({height: values[1]}, deserializedGeometry)
 	var serializedResult = jsonSerializer.serialize({}, extrudedObj)
-	return serializedResult
+	return {geometry: serializedResult, tags: []}
 }
 
 function rotat(values){
-	var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, values[0])
+    let geometry = values[0][0].geometry
+	var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, geometry)
 	const rotatedObj = rotate([3.1415*values[1]/180,3.1415*values[2]/180,3.1415*values[3]/180], deserializedGeometry)
 	var serializedResult = jsonSerializer.serialize({}, rotatedObj)
-	return serializedResult
+	return {geometry: serializedResult, tags: []}
 }
 
 function trans(values){
-	
-	let geometry = values[0]
+	let geometry = values[0][0].geometry
 	var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, geometry)
 	const translatedObj = translate([values[1],values[2],values[3]], deserializedGeometry)
 	var serializedResult = jsonSerializer.serialize({}, translatedObj)
-	return serializedResult
+	return {geometry: serializedResult, tags: []}
 }
 
 function diff(values){
-	var deserializedGeometry0 = jsonDeSerializer.deserialize({output: 'geometry'}, values[0])
-	var deserializedGeometry1 = jsonDeSerializer.deserialize({output: 'geometry'}, values[1])
+	var deserializedGeometry0 = jsonDeSerializer.deserialize({output: 'geometry'}, values[0][0].geometry)
+	var deserializedGeometry1 = jsonDeSerializer.deserialize({output: 'geometry'}, values[1][0].geometry)
 	const subtractedObj = subtract(deserializedGeometry0, deserializedGeometry1)
 	var serializedResult = jsonSerializer.serialize({}, subtractedObj)
-	return serializedResult
+	return {geometry: serializedResult, tags: []}
 }
 
 function intersection(values){
-	var deserializedGeometry0 = jsonDeSerializer.deserialize({output: 'geometry'}, values[0])
-	var deserializedGeometry1 = jsonDeSerializer.deserialize({output: 'geometry'}, values[1])
+	var deserializedGeometry0 = jsonDeSerializer.deserialize({output: 'geometry'}, values[0][0].geometry)
+	var deserializedGeometry1 = jsonDeSerializer.deserialize({output: 'geometry'}, values[1][0].geometry)
 	const intersectionObj = intersect(deserializedGeometry0, deserializedGeometry1)
 	var serializedResult = jsonSerializer.serialize({}, intersectionObj)
-	return serializedResult
+	return {geometry: serializedResult, tags: []}
 }
 
 function wrap(values){
-	var deserializedGeometry = values.map(x => jsonDeSerializer.deserialize({output: 'geometry'}, x))
+	var deserializedGeometry = values.map(x => jsonDeSerializer.deserialize({output: 'geometry'}, x.geometry))
     
     const hullObj = hull(deserializedGeometry)
     
 	var serializedResult = jsonSerializer.serialize({}, hullObj)
-	return serializedResult
+	return {geometry: serializedResult, tags: []}
 }
 
 function assembly(values){
@@ -161,7 +160,7 @@ function clr(values){
 
 function stl(values){
     
-    var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, values[0])
+    var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, values[0].geometry)
     
     const rawData = stlSerializer.serialize({binary: false},deserializedGeometry)
     
