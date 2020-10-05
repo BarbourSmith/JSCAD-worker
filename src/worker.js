@@ -34,13 +34,13 @@ const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/mod
 function circ(values){
 	var myCircle = circle({ radius: values[0]/2, segments: values[1]})
 	var serializedCircle = jsonSerializer.serialize({}, myCircle)
-	return {geometry: serializedCircle, tags: []}
+	return [{geometry: serializedCircle, tags: []}]
 }
 
 function rect(values){
 	var myCube = rectangle({size: values})
 	var serializedCube = jsonSerializer.serialize({}, myCube)
-	return {geometry: serializedCube, tags: []}
+	return [{geometry: serializedCube, tags: []}]
 }
 
 //not working
@@ -58,23 +58,29 @@ function extr(values){
 	var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, geometry)
 	const extrudedObj = extrudeLinear({height: values[1]}, deserializedGeometry)
 	var serializedResult = jsonSerializer.serialize({}, extrudedObj)
-	return {geometry: serializedResult, tags: []}
+	return [{geometry: serializedResult, tags: []}]
 }
 
 function rotat(values){
-    let geometry = values[0][0].geometry
-	var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, geometry)
-	const rotatedObj = rotate([3.1415*values[1]/180,3.1415*values[2]/180,3.1415*values[3]/180], deserializedGeometry)
-	var serializedResult = jsonSerializer.serialize({}, rotatedObj)
-	return {geometry: serializedResult, tags: []}
+    var rotatedArray = []
+    values[0].forEach(item => {
+        var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
+        const rotatedObj = rotate([3.1415*values[1]/180,3.1415*values[2]/180,3.1415*values[3]/180], deserializedGeometry)
+        var serializedResult = jsonSerializer.serialize({}, rotatedObj)
+        rotatedArray.push({geometry: serializedResult, tags: item.tags})
+    })
+	return rotatedArray
 }
 
 function trans(values){
-	let geometry = values[0][0].geometry
-	var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, geometry)
-	const translatedObj = translate([values[1],values[2],values[3]], deserializedGeometry)
-	var serializedResult = jsonSerializer.serialize({}, translatedObj)
-	return {geometry: serializedResult, tags: []}
+    var translatedArray = []
+    values[0].forEach(item => {
+        var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
+        const translatedObj = translate([values[1],values[2],values[3]], deserializedGeometry)
+        var serializedResult = jsonSerializer.serialize({}, translatedObj)
+        translatedArray.push({geometry: serializedResult, tags: item.tags})
+    })
+	return translatedArray
 }
 
 function diff(values){
@@ -82,7 +88,7 @@ function diff(values){
 	var deserializedGeometry1 = jsonDeSerializer.deserialize({output: 'geometry'}, values[1][0].geometry)
 	const subtractedObj = subtract(deserializedGeometry0, deserializedGeometry1)
 	var serializedResult = jsonSerializer.serialize({}, subtractedObj)
-	return {geometry: serializedResult, tags: []}
+	return [{geometry: serializedResult, tags: []}]
 }
 
 function intersection(values){
@@ -90,7 +96,7 @@ function intersection(values){
 	var deserializedGeometry1 = jsonDeSerializer.deserialize({output: 'geometry'}, values[1][0].geometry)
 	const intersectionObj = intersect(deserializedGeometry0, deserializedGeometry1)
 	var serializedResult = jsonSerializer.serialize({}, intersectionObj)
-	return {geometry: serializedResult, tags: []}
+	return [{geometry: serializedResult, tags: []}]
 }
 
 function wrap(values){
@@ -102,7 +108,22 @@ function wrap(values){
 	return {geometry: serializedResult, tags: []}
 }
 
+/*
+Assembly takes in any number of inputs and places them all in the the returned object
+*/
 function assembly(values){
+    
+	var assemblyArray = []
+    values[0].forEach(input => {
+        input.forEach(item => {
+            assemblyArray.push(item)
+        })
+    })
+    
+	return assemblyArray
+}
+
+function unon(values){
 	var deserializedGeometry = values[0].map(x => jsonDeSerializer.deserialize({output: 'geometry'}, x))
     
     const unionObj = union(deserializedGeometry)
@@ -184,5 +205,6 @@ workerpool.worker({
  	rectangle: rect,
  	extrude: extr,
  	polygon: poly,
- 	rotate: rotat
+ 	rotate: rotat,
+    union:unon
 });
