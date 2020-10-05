@@ -135,7 +135,7 @@ function wrap(values){
 Assembly takes in any number of inputs and places them all in the the returned object
 */
 function assembly(values){
-    
+    unon(values)
 	var assemblyArray = []
     values[0].forEach(input => {
         input.forEach(item => {
@@ -143,7 +143,27 @@ function assembly(values){
         })
     })
     
-	return assemblyArray
+    //Make a new array with all the bits from up stream subtracted
+    var subtractedArray = []
+    var i = 0
+    while(i < assemblyArray.length-1){
+        var item = assemblyArray[i]
+        var deserialzedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
+        var upStream = union(assemblyArray.slice(i+1).map(x => jsonDeSerializer.deserialize({output: 'geometry'}, x.geometry)))
+        
+        var subtracted = subtract(deserialzedGeometry, upStream)
+        
+        item.geometry = jsonSerializer.serialize({}, subtracted)
+        
+        subtractedArray.push(item)
+        i++
+    }
+    
+    //Grab the last item that doesn't need anything subtracted from it
+    item = assemblyArray[assemblyArray.length-1]
+    subtractedArray.push(item)
+    
+	return subtractedArray
 }
 
 function unon(values){
@@ -203,10 +223,6 @@ function tag(values){
     inputAssembly.forEach(item => {
         item.tags.push(tagToAdd)
     })
-    
-    console.log("Tagged assembly: ")
-    console.log(inputAssembly)
-    
     return inputAssembly
 }
 
