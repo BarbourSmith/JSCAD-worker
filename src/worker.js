@@ -54,11 +54,14 @@ function poly(values){
 }
 
 function extr(values){
-	let geometry = values[0][0].geometry
-	var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, geometry)
-	const extrudedObj = extrudeLinear({height: values[1]}, deserializedGeometry)
-	var serializedResult = jsonSerializer.serialize({}, extrudedObj)
-	return [{geometry: serializedResult, tags: []}]
+    var extrudedArray = []
+    values[0].forEach(item => {
+        var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
+        const extrudedObj = extrudeLinear({height: values[1]}, deserializedGeometry)
+        var serializedResult = jsonSerializer.serialize({}, extrudedObj)
+        extrudedArray.push({geometry: serializedResult, tags: item.tags})
+    })
+	return extrudedArray
 }
 
 function rotat(values){
@@ -84,21 +87,35 @@ function trans(values){
 }
 
 function diff(values){
-	var deserializedGeometry0 = jsonDeSerializer.deserialize({output: 'geometry'}, values[0][0].geometry)
-	var deserializedGeometry1 = jsonDeSerializer.deserialize({output: 'geometry'}, values[1][0].geometry)
-	const subtractedObj = subtract(deserializedGeometry0, deserializedGeometry1)
-	var serializedResult = jsonSerializer.serialize({}, subtractedObj)
-	return [{geometry: serializedResult, tags: []}]
+    var unioned = unon([[values[1]]])
+	var deserializedGeometry0 = jsonDeSerializer.deserialize({output: 'geometry'}, unioned[0].geometry)
+    
+    var outputArray = []
+    values[0].forEach(item => {
+        var deserializedGeometry1 = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
+        const subtractedObj = subtract(deserializedGeometry1, deserializedGeometry0)
+        var serializedResult = jsonSerializer.serialize({}, subtractedObj)
+        outputArray.push({geometry: serializedResult, tags: item.tags})
+    })
+	return outputArray
 }
 
+//Intersection A, B returns the parts of A which intersect with B so we are going to make a union out of B and then intersect that with each of A. 
 function intersection(values){
-	var deserializedGeometry0 = jsonDeSerializer.deserialize({output: 'geometry'}, values[0][0].geometry)
-	var deserializedGeometry1 = jsonDeSerializer.deserialize({output: 'geometry'}, values[1][0].geometry)
-	const intersectionObj = intersect(deserializedGeometry0, deserializedGeometry1)
-	var serializedResult = jsonSerializer.serialize({}, intersectionObj)
-	return [{geometry: serializedResult, tags: []}]
+    var unioned = unon([[values[1]]])
+	var deserializedGeometry0 = jsonDeSerializer.deserialize({output: 'geometry'}, unioned[0].geometry)
+    
+    var outputArray = []
+    values[0].forEach(item => {
+        var deserializedGeometry1 = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
+        const intersectionObj = intersect(deserializedGeometry1, deserializedGeometry0)
+        var serializedResult = jsonSerializer.serialize({}, intersectionObj)
+        outputArray.push({geometry: serializedResult, tags: item.tags})
+    })
+	return outputArray
 }
 
+//Form a big array of all of the individual bits in each input, then hull the whole damn thing
 function wrap(values){
 	var deserializedGeometry = values.map(x => jsonDeSerializer.deserialize({output: 'geometry'}, x.geometry))
     
@@ -124,12 +141,16 @@ function assembly(values){
 }
 
 function unon(values){
-	var deserializedGeometry = values[0].map(x => jsonDeSerializer.deserialize({output: 'geometry'}, x))
-    
-    const unionObj = union(deserializedGeometry)
-    
+    var arrayOfGeometry = []
+    values[0].forEach(input => {
+        input.forEach(item => {
+            var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
+            arrayOfGeometry.push(deserializedGeometry)
+        })
+    })
+    const unionObj = union(arrayOfGeometry)
 	var serializedResult = jsonSerializer.serialize({}, unionObj)
-	return serializedResult
+	return [{geometry: serializedResult, tags: []}]
 }
 
 function code(values){
@@ -162,7 +183,7 @@ function code(values){
     const returnedGeometry = foo({...inputs });
     
     var serializedResult = jsonSerializer.serialize({}, returnedGeometry)
-	return serializedResult
+	return [{geometry: serializedResult, tags: []}]
 }
 
 //Just a placeholder for now
