@@ -115,14 +115,20 @@ function intersection(values){
 	return outputArray
 }
 
-//Form a big array of all of the individual bits in each input, then hull the whole damn thing
+//Form a big array of all of the individual bits in each input, then hull the whole damn thing. In this case values appears to be all of the input in an array.
 function wrap(values){
-	var deserializedGeometry = values.map(x => jsonDeSerializer.deserialize({output: 'geometry'}, x.geometry))
+    var builtArray = []
+    values.forEach(input => {
+        input.forEach(item => {
+            var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
+            builtArray.push(deserializedGeometry)
+        })
+    })
     
-    const hullObj = hull(deserializedGeometry)
+    const hullObj = hull(builtArray)
     
 	var serializedResult = jsonSerializer.serialize({}, hullObj)
-	return {geometry: serializedResult, tags: []}
+	return [{geometry: serializedResult, tags: []}]
 }
 
 /*
@@ -191,10 +197,29 @@ function specify(values){
     return values[0]
 }
 
-//Just a placeholder for now
 function tag(values){
-    return values[0]
+    var inputAssembly = values[0]
+    var tagToAdd = values[1]
+    inputAssembly.forEach(item => {
+        item.tags.push(tagToAdd)
+    })
+    
+    console.log("Tagged assembly: ")
+    console.log(inputAssembly)
+    
+    return inputAssembly
 }
+
+function extractTag(values){
+    extractedItems = []
+    values[0].forEach(item => {
+        if (item.tags.indexOf(values[1]) > -1){
+            extractedItems.push(item)
+        }
+    })
+    return extractedItems;
+}
+
 //Just a placeholder for now
 function clr(values){
     return values[0]
@@ -216,6 +241,7 @@ workerpool.worker({
  	circle: circ,
  	code: code,
     difference: diff,
+    extractTag: extractTag,
     intersection:intersection,
     hull:wrap,
     specify: specify,
