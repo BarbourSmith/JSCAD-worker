@@ -183,11 +183,11 @@ function code(values){
     
     inputs = {};
     for (key in values[1]) {
-      if (values[1][key] != null && typeof values[1][key] === 'object') {
-        inputs[key] = jsonDeSerializer.deserialize({output: 'geometry'}, values[1][key])
-      } else {
-        inputs[key] = values[1][key];
-      }
+        if (values[1][key] != null && typeof values[1][key] === 'object') {
+            inputs[key] = jsonDeSerializer.deserialize({output: 'geometry'}, values[1][key][0].geometry) //Only the first element of an assembly is passed to code atoms
+        } else {
+            inputs[key] = values[1][key];
+        }
     }
     
     //These actions are available in the context that the code is executed in
