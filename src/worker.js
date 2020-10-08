@@ -135,33 +135,52 @@ function wrap(values){
 Assembly takes in any number of inputs and places them all in the the returned object
 */
 function assembly(values){
-    unon(values)
-	var assemblyArray = []
-    values[0].forEach(input => {
+    
+    var inputs = values[0] //Inputs is an array of assemblies with the least dominant input first [[{},{},{}],[{},{}]]
+    
+    console.log("Assembly")
+    console.log(values)
+    
+    //Map inputs into deserialized geomety
+    inputs.forEach(input => {
         input.forEach(item => {
-            assemblyArray.push(item)
+            item.geometry = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
         })
     })
     
-    //Make a new array with all the bits from up stream subtracted
-    var subtractedArray = []
+    console.log("Inputs")
+    console.log(inputs)
+    
+    //Generate a subtracted array which contains geometry which has already had upstream inputs subtracted from it
     var i = 0
-    while(i < assemblyArray.length-1){
-        var item = assemblyArray[i]
-        var deserialzedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
-        var upStream = union(assemblyArray.slice(i+1).map(x => jsonDeSerializer.deserialize({output: 'geometry'}, x.geometry)))
-        
-        var subtracted = subtract(deserialzedGeometry, upStream)
-        
-        item.geometry = jsonSerializer.serialize({}, subtracted)
-        
-        subtractedArray.push(item)
+    while(i <= inputs.length - 2){
+        inputs[i].forEach(itemToSubtractFrom  => {       //Subtract all of the upstream input's items
+            var j = i + 1
+            while(j <= inputs.length - 1){               //Walk through each of the upstream inputs
+                inputs[j].forEach(itemToSubtract => {    //And subtract each of it's items
+                    console.log("Subtracting " + itemToSubtract.tags[0] + "from " + itemToSubtractFrom.tags[0])
+                    itemToSubtractFrom.geometry = subtract(itemToSubtractFrom.geometry, itemToSubtract.geometry)
+                })
+                j++
+            }
+        })
         i++
     }
     
-    //Grab the last item that doesn't need anything subtracted from it
-    item = assemblyArray[assemblyArray.length-1]
-    subtractedArray.push(item)
+    //At this point inputs contains all of the geometry and it has been subtracted except the last input
+    
+    
+    //Join them all into a single array
+    var subtractedArray = []
+    subtractedArray.concat(...inputs)
+    
+    console.log("Subtracted array: ")
+    console.log(subtractedArray)
+    
+    //Map to deserialization 
+    subtractedArray.forEach(item => {
+        item.geometry = jsonSerializer.serialize({}, item.geometry)
+    })
     
 	return subtractedArray
 }
