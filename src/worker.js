@@ -1,6 +1,4 @@
-const jscad = require('@jscad/modeling');
-const jsonSerializer= require('@jscad/json-serializer');
-const jsonDeSerializer = require('@jscad/json-deserializer')
+const jscad = require('@jscad/modeling')
 const stlSerializer = require('@jscad/stl-serializer')
 
 
@@ -33,33 +31,19 @@ const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/mod
 
 function circ(values){
 	var myCircle = circle({ radius: values[0]/2, segments: values[1]})
-	var serializedCircle = jsonSerializer.serialize({}, myCircle)
-	return [{geometry: serializedCircle, tags: []}]
+	return [{geometry: myCircle, tags: []}]
 }
 
 function rect(values){
 	var myCube = rectangle({size: values})
-	var serializedCube = jsonSerializer.serialize({}, myCube)
-	return [{geometry: serializedCube, tags: []}]
-}
-
-//not working
-function poly(values){
-	let roof = [[100,110], [0,110], [50,200]]
-	let wall = [[0,0], [10,0], [10,10], [0,10]]
-
-	let poly = polygon({ points: roof })
-	var serializedPoly = jsonSerializer.serialize({}, poly)
-	return serializedPoly
+	return [{geometry: myCube, tags: []}]
 }
 
 function extr(values){
     var extrudedArray = []
     values[0].forEach(item => {
-        var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
-        const extrudedObj = extrudeLinear({height: values[1]}, deserializedGeometry)
-        var serializedResult = jsonSerializer.serialize({}, extrudedObj)
-        extrudedArray.push({geometry: serializedResult, tags: item.tags})
+        const extrudedObj = extrudeLinear({height: values[1]}, item.geometry)
+        extrudedArray.push({geometry: extrudedObj, tags: item.tags})
     })
 	return extrudedArray
 }
@@ -67,10 +51,8 @@ function extr(values){
 function rotat(values){
     var rotatedArray = []
     values[0].forEach(item => {
-        var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
-        const rotatedObj = rotate([3.1415*values[1]/180,3.1415*values[2]/180,3.1415*values[3]/180], deserializedGeometry)
-        var serializedResult = jsonSerializer.serialize({}, rotatedObj)
-        rotatedArray.push({geometry: serializedResult, tags: item.tags})
+        const rotatedObj = rotate([3.1415*values[1]/180,3.1415*values[2]/180,3.1415*values[3]/180], item.geometry)
+        rotatedArray.push({geometry: rotatedObj, tags: item.tags})
     })
 	return rotatedArray
 }
@@ -78,24 +60,20 @@ function rotat(values){
 function trans(values){
     var translatedArray = []
     values[0].forEach(item => {
-        var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
-        const translatedObj = translate([values[1],values[2],values[3]], deserializedGeometry)
-        var serializedResult = jsonSerializer.serialize({}, translatedObj)
-        translatedArray.push({geometry: serializedResult, tags: item.tags})
+        const translatedObj = translate([values[1],values[2],values[3]], item.geometry)
+        translatedArray.push({geometry: translatedObj, tags: item.tags})
     })
 	return translatedArray
 }
 
 function diff(values){
     var unioned = unon([[values[1]]])
-	var deserializedGeometry0 = jsonDeSerializer.deserialize({output: 'geometry'}, unioned[0].geometry)
+	var deserializedGeometry0 = unioned[0].geometry
     
     var outputArray = []
     values[0].forEach(item => {
-        var deserializedGeometry1 = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
-        const subtractedObj = subtract(deserializedGeometry1, deserializedGeometry0)
-        var serializedResult = jsonSerializer.serialize({}, subtractedObj)
-        outputArray.push({geometry: serializedResult, tags: item.tags})
+        const subtractedObj = subtract(item.geometry, deserializedGeometry0)
+        outputArray.push({geometry: subtractedObj, tags: item.tags})
     })
 	return outputArray
 }
@@ -103,14 +81,12 @@ function diff(values){
 //Intersection A, B returns the parts of A which intersect with B so we are going to make a union out of B and then intersect that with each of A. 
 function intersection(values){
     var unioned = unon([[values[1]]])
-	var deserializedGeometry0 = jsonDeSerializer.deserialize({output: 'geometry'}, unioned[0].geometry)
+	var deserializedGeometry0 = unioned[0].geometry
     
     var outputArray = []
     values[0].forEach(item => {
-        var deserializedGeometry1 = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
-        const intersectionObj = intersect(deserializedGeometry1, deserializedGeometry0)
-        var serializedResult = jsonSerializer.serialize({}, intersectionObj)
-        outputArray.push({geometry: serializedResult, tags: item.tags})
+        const intersectionObj = intersect(item.geometry, deserializedGeometry0)
+        outputArray.push({geometry: intersectionObj, tags: item.tags})
     })
 	return outputArray
 }
@@ -120,15 +96,13 @@ function wrap(values){
     var builtArray = []
     values.forEach(input => {
         input.forEach(item => {
-            var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
-            builtArray.push(deserializedGeometry)
+            builtArray.push(item.geometry)
         })
     })
     
     const hullObj = hull(builtArray)
     
-	var serializedResult = jsonSerializer.serialize({}, hullObj)
-	return [{geometry: serializedResult, tags: []}]
+	return [{geometry: hullObj, tags: []}]
 }
 
 /*
@@ -138,12 +112,17 @@ function assembly(values){
     
     var inputs = values[0] //Inputs is an array of assemblies with the least dominant input first [[{},{},{}],[{},{}]]
     
-    //Map inputs into deserialized geomety
+    var count = 0
     inputs.forEach(input => {
         input.forEach(item => {
-            item.geometry = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
+            count++;
         })
     })
+    console.log("Number of arguments to assembly: " + count)
+    if(count > 10){
+        console.log("Assembly currently only supports up to ten arguments")
+        return -1
+    }
     
     //Generate a subtracted array which contains geometry which has already had upstream inputs subtracted from it
     var i = 0
@@ -167,11 +146,6 @@ function assembly(values){
     var subtractedArray = []
     subtractedArray = subtractedArray.concat(...inputs)
     
-    //Map to de-serialization 
-    subtractedArray.forEach(item => {
-        item.geometry = jsonSerializer.serialize({}, item.geometry)
-    })
-    
 	return subtractedArray
 }
 
@@ -179,13 +153,11 @@ function unon(values){
     var arrayOfGeometry = []
     values[0].forEach(input => {
         input.forEach(item => {
-            var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
-            arrayOfGeometry.push(deserializedGeometry)
+            arrayOfGeometry.push(item.geometry)
         })
     })
     const unionObj = union(arrayOfGeometry)
-	var serializedResult = jsonSerializer.serialize({}, unionObj)
-	return [{geometry: serializedResult, tags: []}]
+	return [{geometry: unionObj, tags: []}]
 }
 
 function code(values){
@@ -193,7 +165,7 @@ function code(values){
     inputs = {};
     for (key in values[1]) {
         if (values[1][key] != null && typeof values[1][key] === 'object') {
-            inputs[key] = jsonDeSerializer.deserialize({output: 'geometry'}, values[1][key][0].geometry) //Only the first element of an assembly is passed to code atoms
+            inputs[key] = values[1][key][0].geometry //Only the first element of an assembly is passed to code atoms
         } else {
             inputs[key] = values[1][key];
         }
@@ -217,8 +189,7 @@ function code(values){
     const foo = new Function(signature, values[0]);
     const returnedGeometry = foo({...inputs });
     
-    var serializedResult = jsonSerializer.serialize({}, returnedGeometry)
-	return [{geometry: serializedResult, tags: []}]
+	return [{geometry: returnedGeometry, tags: []}]
 }
 
 //Just a placeholder for now
@@ -252,9 +223,7 @@ function clr(values){
 
 function stl(values){
     
-    var deserializedGeometry = jsonDeSerializer.deserialize({output: 'geometry'}, values[0].geometry)
-    
-    const rawData = stlSerializer.serialize({binary: false},deserializedGeometry)
+    const rawData = stlSerializer.serialize({binary: false},values[0].geometry)
     
     return rawData
 }
@@ -276,7 +245,6 @@ workerpool.worker({
  	translate: trans,
  	rectangle: rect,
  	extrude: extr,
- 	polygon: poly,
  	rotate: rotat,
     union:unon
 });
