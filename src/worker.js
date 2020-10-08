@@ -1,5 +1,6 @@
 const jscad = require('@jscad/modeling')
-const stlSerializer = require('@jscad/stl-serializer')
+const { entitiesFromSolids } = require('@jscad/regl-renderer') 
+// const stlSerializer = require('@jscad/stl-serializer')
 
 
 const workerpool = require('workerpool');
@@ -223,9 +224,21 @@ function clr(values){
 
 function stl(values){
     
-    const rawData = stlSerializer.serialize({binary: false},values[0].geometry)
+    //const rawData = stlSerializer.serialize({binary: false},values[0].geometry)
     
-    return rawData
+    return values[0]//rawData
+}
+
+function render(shape){
+    try{
+        const unionized = union(shape.map(x => x.geometry))  //Union to compress it all into one
+        var solids = entitiesFromSolids({}, unionized)  //This should be able to handle an array but right now it can't
+    }
+    catch(err){
+        console.log(err)
+    }
+    
+    return solids
 }
 
 
@@ -239,6 +252,7 @@ workerpool.worker({
     intersection:intersection,
     hull:wrap,
     specify: specify,
+    render:render,
     stl:stl,
     tag, tag,
     color: clr,
