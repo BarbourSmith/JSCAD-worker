@@ -138,18 +138,12 @@ function assembly(values){
     
     var inputs = values[0] //Inputs is an array of assemblies with the least dominant input first [[{},{},{}],[{},{}]]
     
-    console.log("Assembly")
-    console.log(values)
-    
     //Map inputs into deserialized geomety
     inputs.forEach(input => {
         input.forEach(item => {
             item.geometry = jsonDeSerializer.deserialize({output: 'geometry'}, item.geometry)
         })
     })
-    
-    console.log("Inputs")
-    console.log(inputs)
     
     //Generate a subtracted array which contains geometry which has already had upstream inputs subtracted from it
     var i = 0
@@ -158,7 +152,6 @@ function assembly(values){
             var j = i + 1
             while(j <= inputs.length - 1){               //Walk through each of the upstream inputs
                 inputs[j].forEach(itemToSubtract => {    //And subtract each of it's items
-                    console.log("Subtracting " + itemToSubtract.tags[0] + "from " + itemToSubtractFrom.tags[0])
                     itemToSubtractFrom.geometry = subtract(itemToSubtractFrom.geometry, itemToSubtract.geometry)
                 })
                 j++
@@ -172,12 +165,9 @@ function assembly(values){
     
     //Join them all into a single array
     var subtractedArray = []
-    subtractedArray.concat(...inputs)
+    subtractedArray = subtractedArray.concat(...inputs)
     
-    console.log("Subtracted array: ")
-    console.log(subtractedArray)
-    
-    //Map to deserialization 
+    //Map to de-serialization 
     subtractedArray.forEach(item => {
         item.geometry = jsonSerializer.serialize({}, item.geometry)
     })
