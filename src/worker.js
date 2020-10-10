@@ -1,6 +1,6 @@
 const jscad = require('@jscad/modeling')
 const { entitiesFromSolids } = require('@jscad/regl-renderer') 
-// const stlSerializer = require('@jscad/stl-serializer')
+const stlSerializer = require('@jscad/stl-serializer')
 
 
 const workerpool = require('workerpool');
@@ -223,10 +223,11 @@ function clr(values){
 }
 
 function stl(values){
+    const unionized = union(values[0].map(x => x.geometry))  //Union to compress it all into one
     
-    //const rawData = stlSerializer.serialize({binary: false},values[0].geometry)
+    const rawData = stlSerializer.serialize({binary: false},unionized)
     
-    return values[0]//rawData
+    return rawData
 }
 
 function render(shape){
