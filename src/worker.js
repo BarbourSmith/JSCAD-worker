@@ -32,7 +32,6 @@ const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/mod
 
 function circ(values){
 	var myCircle = circle({ radius: values[0]/2, segments: values[1]})
-    console.log(myCircle)
 	return [{geometry: myCircle, tags: []}]
 }
 
@@ -220,7 +219,6 @@ function extractTag(values){
 
 //Just a placeholder for now
 function clr(values){
-    console.log(values)
     //Delete Spaces in colorName
     var cssColor = values[1].replace(/ /g, "")
     //Pass name into RGB
