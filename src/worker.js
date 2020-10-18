@@ -232,8 +232,7 @@ function stl(values){
 
 function render(shape){
     try{
-        const unionized = union(shape.map(x => x.geometry))  //Union to compress it all into one
-        var solids = entitiesFromSolids({}, unionized)  //This should be able to handle an array but right now it can't
+        var solids = entitiesFromSolids({}, shape.map(x => x.geometry))
     }
     catch(err){
         console.log(err)
