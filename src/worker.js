@@ -26,7 +26,7 @@ const { cuboid, sphere, cylinder, circle, star, rectangle } = require('@jscad/mo
 const { translate, rotate, scale } = transforms
 const { hull } = hulls
 const { union, subtract, intersect} = booleans
-const { colorize } = require('@jscad/modeling').colors
+const { colorize, colorNameToRgb } = require('@jscad/modeling').colors
 const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/modeling').extrusions
 
 
@@ -223,9 +223,10 @@ function extractTag(values){
 //Just a placeholder for now
 function clr(values){
     console.log(values)
+    var chosenColor = colorNameToRgb(values[1]) 
     var coloredArray = []
     values[0].forEach(item => {
-        const coloredObj = colorize([0, 1, 0], item.geometry)
+        const coloredObj = colorize(chosenColor, item.geometry)
         coloredArray.push({geometry: coloredObj, tags: item.tags})
     })
     console.log("in cOL0R")
