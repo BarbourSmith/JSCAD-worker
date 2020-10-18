@@ -1,4 +1,5 @@
 const jscad = require('@jscad/modeling')
+const { entitiesFromSolids } = require('@jscad/regl-renderer') 
 const stlSerializer = require('@jscad/stl-serializer')
 
 
@@ -25,7 +26,7 @@ const { cuboid, sphere, cylinder, circle, star, rectangle } = require('@jscad/mo
 const { translate, rotate, scale } = transforms
 const { hull } = hulls
 const { union, subtract, intersect} = booleans
-const { colorize } = require('@jscad/modeling').colors
+const { colorize, colorNameToRgb } = require('@jscad/modeling').colors
 const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/modeling').extrusions
 
 
@@ -218,14 +219,35 @@ function extractTag(values){
 
 //Just a placeholder for now
 function clr(values){
-    return values[0]
+    //Delete Spaces in colorName
+    var cssColor = values[1].replace(/ /g, "")
+    //Pass name into RGB
+    var chosenColor = colorNameToRgb(cssColor) 
+    var coloredArray = []
+    values[0].forEach(item => {
+        const coloredObj = colorize(chosenColor, item.geometry)
+        coloredArray.push({geometry: coloredObj, tags: item.tags})
+    })
+    return coloredArray
 }
 
 function stl(values){
+    const unionized = union(values[0].map(x => x.geometry))  //Union to compress it all into one
     
-    const rawData = stlSerializer.serialize({binary: false},values[0].geometry)
+    const rawData = stlSerializer.serialize({binary: false},unionized)
     
     return rawData
+}
+
+function render(shape){
+    try{
+        var solids = entitiesFromSolids({}, shape.map(x => x.geometry))
+    }
+    catch(err){
+        console.log(err)
+    }
+    
+    return solids
 }
 
 
@@ -239,6 +261,7 @@ workerpool.worker({
     intersection:intersection,
     hull:wrap,
     specify: specify,
+    render:render,
     stl:stl,
     tag, tag,
     color: clr,
