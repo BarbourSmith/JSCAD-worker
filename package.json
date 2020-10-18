@@ -10,7 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "@jscad/modeling": "^2.0.0-alpha.5",
-    "@jscad/regl-renderer": "^2.0.0-alpha.7",
+    "@jscad/regl-renderer": "^2.0.0-alpha.8",
+    "@jscad/stl-serializer": "^2.0.0-alpha.6",
     "@webpack-cli/init": "^0.2.2",
     "workerpool": "^6.0.0"
   },

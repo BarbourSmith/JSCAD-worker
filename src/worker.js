@@ -32,6 +32,7 @@ const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/mod
 
 function circ(values){
 	var myCircle = circle({ radius: values[0]/2, segments: values[1]})
+    console.log(myCircle)
 	return [{geometry: myCircle, tags: []}]
 }
 
@@ -46,6 +47,8 @@ function extr(values){
         const extrudedObj = extrudeLinear({height: values[1]}, item.geometry)
         extrudedArray.push({geometry: extrudedObj, tags: item.tags})
     })
+    console.log("in EXTRUDE")
+    console.log(extrudedArray)
 	return extrudedArray
 }
 
@@ -219,7 +222,15 @@ function extractTag(values){
 
 //Just a placeholder for now
 function clr(values){
-    return values[0]
+    console.log(values)
+    var coloredArray = []
+    values[0].forEach(item => {
+        const coloredObj = colorize([0, 1, 0], item.geometry)
+        coloredArray.push({geometry: coloredObj, tags: item.tags})
+    })
+    console.log("in cOL0R")
+    console.log(coloredArray)
+    return coloredArray
 }
 
 function stl(values){
