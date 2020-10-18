@@ -229,8 +229,6 @@ function clr(values){
         const coloredObj = colorize(chosenColor, item.geometry)
         coloredArray.push({geometry: coloredObj, tags: item.tags})
     })
-    console.log("in cOL0R")
-    console.log(coloredArray)
     return coloredArray
 }
 
