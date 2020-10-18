@@ -9,12 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@jscad/io": "2.0.0-alpha.1",
-    "@jscad/io-utils": "^0.1.3",
-    "@jscad/json-deserializer": "2.0.0-alpha.5",
-    "@jscad/json-serializer":"2.0.0-alpha.5",
-    "@jscad/modeling": "2.0.0-alpha.1",
-    "@jscad/utils": "2.0.0-alpha.1",
+    "@jscad/modeling": "^2.0.0-alpha.5",
+    "@jscad/regl-renderer": "^2.0.0-alpha.7",
     "@webpack-cli/init": "^0.2.2",
     "workerpool": "^6.0.0"
   },
