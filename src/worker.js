@@ -47,8 +47,6 @@ function extr(values){
         const extrudedObj = extrudeLinear({height: values[1]}, item.geometry)
         extrudedArray.push({geometry: extrudedObj, tags: item.tags})
     })
-    console.log("in EXTRUDE")
-    console.log(extrudedArray)
 	return extrudedArray
 }
 
@@ -223,7 +221,10 @@ function extractTag(values){
 //Just a placeholder for now
 function clr(values){
     console.log(values)
-    var chosenColor = colorNameToRgb(values[1]) 
+    //Delete Spaces in colorName
+    var cssColor = values[1].replace(/ /g, "")
+    //Pass name into RGB
+    var chosenColor = colorNameToRgb(cssColor) 
     var coloredArray = []
     values[0].forEach(item => {
         const coloredObj = colorize(chosenColor, item.geometry)
