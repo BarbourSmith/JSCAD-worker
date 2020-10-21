@@ -32,12 +32,12 @@ const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/mod
 
 function circ(values){
 	var myCircle = circle({ radius: values[0]/2, segments: values[1]})
-	return [{geometry: myCircle, tags: [], color: "black"}]
+	return [{geometry: myCircle, tags: [], color: "pink"}]
 }
 
 function rect(values){
 	var myCube = rectangle({size: values})
-	return [{geometry: myCube, tags: [], color: "black"}]
+	return [{geometry: myCube, tags: [], color: "pink"}]
 }
 
 function extr(values){
@@ -53,7 +53,7 @@ function rotat(values){
     var rotatedArray = []
     values[0].forEach(item => {
         const rotatedObj = rotate([3.1415*values[1]/180,3.1415*values[2]/180,3.1415*values[3]/180], item.geometry)
-        rotatedArray.push({geometry: rotatedObj, tags: item.tags})
+        rotatedArray.push({geometry: rotatedObj, tags: item.tags, color: item.color})
     })
 	return rotatedArray
 }
@@ -62,7 +62,7 @@ function trans(values){
     var translatedArray = []
     values[0].forEach(item => {
         const translatedObj = translate([values[1],values[2],values[3]], item.geometry)
-        translatedArray.push({geometry: translatedObj, tags: item.tags})
+        translatedArray.push({geometry: translatedObj, tags: item.tags, color: item.color})
     })
 	return translatedArray
 }
@@ -74,7 +74,7 @@ function diff(values){
     var outputArray = []
     values[0].forEach(item => {
         const subtractedObj = subtract(item.geometry, deserializedGeometry0)
-        outputArray.push({geometry: subtractedObj, tags: item.tags})
+        outputArray.push({geometry: subtractedObj, tags: item.tags, color: item.color})
     })
 	return outputArray
 }
@@ -87,7 +87,7 @@ function intersection(values){
     var outputArray = []
     values[0].forEach(item => {
         const intersectionObj = intersect(item.geometry, deserializedGeometry0)
-        outputArray.push({geometry: intersectionObj, tags: item.tags})
+        outputArray.push({geometry: intersectionObj, tags: item.tags, color: item.color})
     })
 	return outputArray
 }
@@ -103,7 +103,7 @@ function wrap(values){
     
     const hullObj = hull(builtArray)
     
-	return [{geometry: hullObj, tags: []}]
+	return [{geometry: hullObj, tags: [], color: "pink"}]
 }
 
 /*
@@ -158,7 +158,7 @@ function unon(values){
         })
     })
     const unionObj = union(arrayOfGeometry)
-	return [{geometry: unionObj, tags: []}]
+	return [{geometry: unionObj, tags: [], color: "pink"}]
 }
 
 function code(values){
@@ -218,14 +218,9 @@ function extractTag(values){
 }
 
 function clr(values){
-    //Delete Spaces in colorName
-    var cssColor = values[1].replace(/ /g, "")
-    //Pass name into RGB
-    var chosenColor = colorNameToRgb(cssColor) 
     var coloredArray = []
     values[0].forEach(item => {
-        const coloredObj = colorize(chosenColor, item.geometry)
-        coloredArray.push({geometry: coloredObj, tags: item.tags})
+        coloredArray.push({geometry: item.geometry, tags: item.tags, color: values[1]})
     })
     return coloredArray
 }
