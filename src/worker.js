@@ -32,19 +32,19 @@ const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/mod
 
 function circ(values){
 	var myCircle = circle({ radius: values[0]/2, segments: values[1]})
-	return [{geometry: myCircle, tags: []}]
+	return [{geometry: myCircle, tags: [], color: "black"}]
 }
 
 function rect(values){
 	var myCube = rectangle({size: values})
-	return [{geometry: myCube, tags: []}]
+	return [{geometry: myCube, tags: [], color: "black"}]
 }
 
 function extr(values){
     var extrudedArray = []
     values[0].forEach(item => {
         const extrudedObj = extrudeLinear({height: values[1]}, item.geometry)
-        extrudedArray.push({geometry: extrudedObj, tags: item.tags})
+        extrudedArray.push({geometry: extrudedObj, tags: item.tags, color: item.color})
     })
 	return extrudedArray
 }
@@ -217,7 +217,6 @@ function extractTag(values){
     return extractedItems;
 }
 
-//Just a placeholder for now
 function clr(values){
     //Delete Spaces in colorName
     var cssColor = values[1].replace(/ /g, "")
@@ -241,7 +240,13 @@ function stl(values){
 
 function render(shape){
     try{
-        var solids = entitiesFromSolids({}, shape.map(x => x.geometry))
+        var solids = entitiesFromSolids({}, shape.map(shape => {
+            //Delete Spaces in colorName
+            var cssColor = shape.color.replace(/ /g, "")
+            //Pass name into RGB
+            var chosenColor = colorNameToRgb(cssColor)
+            return colorize(chosenColor, shape.geometry)
+        }))
     }
     catch(err){
         console.log(err)
