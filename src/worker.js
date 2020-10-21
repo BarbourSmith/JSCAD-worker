@@ -113,32 +113,32 @@ function assembly(values){
     
     var inputs = values[0] //Inputs is an array of assemblies with the least dominant input first [[{},{},{}],[{},{}]]
     
-    var count = 0
-    inputs.forEach(input => {
-        input.forEach(item => {
-            count++;
-        })
-    })
-    console.log("Number of arguments to assembly: " + count)
-    if(count > 10){
-        console.log("Assembly currently only supports up to ten arguments")
-        return -1
-    }
+    // var count = 0
+    // inputs.forEach(input => {
+        // input.forEach(item => {
+            // count++;
+        // })
+    // })
+    // console.log("Number of arguments to assembly: " + count)
+    // if(count > 10){
+        // console.log("Assembly currently only supports up to ten arguments")
+        // return -1
+    // }
     
     //Generate a subtracted array which contains geometry which has already had upstream inputs subtracted from it
-    var i = 0
-    while(i <= inputs.length - 2){
-        inputs[i].forEach(itemToSubtractFrom  => {       //Subtract all of the upstream input's items
-            var j = i + 1
-            while(j <= inputs.length - 1){               //Walk through each of the upstream inputs
-                inputs[j].forEach(itemToSubtract => {    //And subtract each of it's items
-                    itemToSubtractFrom.geometry = subtract(itemToSubtractFrom.geometry, itemToSubtract.geometry)
-                })
-                j++
-            }
-        })
-        i++
-    }
+    // var i = 0
+    // while(i <= inputs.length - 2){
+        // inputs[i].forEach(itemToSubtractFrom  => {       //Subtract all of the upstream input's items
+            // var j = i + 1
+            // while(j <= inputs.length - 1){               //Walk through each of the upstream inputs
+                // inputs[j].forEach(itemToSubtract => {    //And subtract each of it's items
+                    // itemToSubtractFrom.geometry = subtract(itemToSubtractFrom.geometry, itemToSubtract.geometry)
+                // })
+                // j++
+            // }
+        // })
+        // i++
+    // }
     
     //At this point inputs contains all of the geometry and it has been subtracted except the last input
     
