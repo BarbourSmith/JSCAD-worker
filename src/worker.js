@@ -209,11 +209,13 @@ function tag(values){
 
 function extractTag(values){
     extractedItems = []
-    values[0].forEach(item => {
-        if (item.tags.indexOf(values[1]) > -1){
-            extractedItems.push(item)
+    var i = 0
+    while(i < values[0].length){
+        if (values[0][i].tags.indexOf(values[1]) > -1){
+            extractedItems.push(values[0][i])
         }
-    })
+        i++
+    }
     return extractedItems;
 }
 
