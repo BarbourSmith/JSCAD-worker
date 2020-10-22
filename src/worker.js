@@ -208,15 +208,30 @@ function tag(values){
 }
 
 function extractTag(values){
-    extractedItems = []
-    var i = 0
-    while(i < values[0].length){
-        if (values[0][i].tags.indexOf(values[1]) > -1){
-            extractedItems.push(values[0][i])
-        }
-        i++
+    
+    function tagNotPresent(item) {
+        return item.tags.indexOf(values[1]) == -1
     }
-    return extractedItems;
+    
+    try{
+        extractedItems = []
+        var i = 0
+        while(i < values[0].length){
+            if (values[0][i].tags.indexOf(values[1]) > -1){
+                var item = values[0][i]
+                var upstream = values[0].slice(i).filter(tagNotPresent).map(item => item.geometry)  //Everything upstream...which doesn't have the target tag...get it's geometry
+                if(upstream.length > 0){
+                    item.geometry = subtract(item.geometry, union(upstream))
+                }
+                extractedItems.push(item)
+            }
+            i++
+        }
+        return extractedItems;
+    }catch(err){
+        console.log(err)
+        return -1
+    }
 }
 
 function clr(values){
