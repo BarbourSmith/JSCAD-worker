@@ -119,7 +119,7 @@ function assembly(values){
             count++;
         })
     })
-    console.log("Number of arguments to assembly: " + count)
+    
     if(count > 10){
         console.log("Assembly currently only supports up to ten arguments")
         return -1
@@ -152,13 +152,20 @@ function assembly(values){
 
 function unon(values){
     var arrayOfGeometry = []
+    var tags = []
     values[0].forEach(input => {
         input.forEach(item => {
             arrayOfGeometry.push(item.geometry)
+            tags = tags.concat(item.tags)
         })
     })
     const unionObj = union(arrayOfGeometry)
-	return [{geometry: unionObj, tags: []}]
+    
+    var keptTags = tags.filter(item => {
+        return item.substring(2, 13) == "BOMitemName"
+    })
+    
+	return [{geometry: unionObj, tags: keptTags}]
 }
 
 function code(values){
