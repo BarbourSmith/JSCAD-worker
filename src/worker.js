@@ -32,19 +32,19 @@ const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/mod
 
 function circ(values){
 	var myCircle = circle({ radius: values[0]/2, segments: values[1]})
-	return [{geometry: myCircle, tags: []}]
+	return [{geometry: myCircle, tags: [], color: "pink"}]
 }
 
 function rect(values){
 	var myCube = rectangle({size: values})
-	return [{geometry: myCube, tags: []}]
+	return [{geometry: myCube, tags: [], color: "pink"}]
 }
 
 function extr(values){
     var extrudedArray = []
     values[0].forEach(item => {
         const extrudedObj = extrudeLinear({height: values[1]}, item.geometry)
-        extrudedArray.push({geometry: extrudedObj, tags: item.tags})
+        extrudedArray.push({geometry: extrudedObj, tags: item.tags, color: item.color})
     })
 	return extrudedArray
 }
@@ -53,7 +53,7 @@ function rotat(values){
     var rotatedArray = []
     values[0].forEach(item => {
         const rotatedObj = rotate([3.1415*values[1]/180,3.1415*values[2]/180,3.1415*values[3]/180], item.geometry)
-        rotatedArray.push({geometry: rotatedObj, tags: item.tags})
+        rotatedArray.push({geometry: rotatedObj, tags: item.tags, color: item.color})
     })
 	return rotatedArray
 }
@@ -62,7 +62,7 @@ function trans(values){
     var translatedArray = []
     values[0].forEach(item => {
         const translatedObj = translate([values[1],values[2],values[3]], item.geometry)
-        translatedArray.push({geometry: translatedObj, tags: item.tags})
+        translatedArray.push({geometry: translatedObj, tags: item.tags, color: item.color})
     })
 	return translatedArray
 }
@@ -74,7 +74,7 @@ function diff(values){
     var outputArray = []
     values[0].forEach(item => {
         const subtractedObj = subtract(item.geometry, deserializedGeometry0)
-        outputArray.push({geometry: subtractedObj, tags: item.tags})
+        outputArray.push({geometry: subtractedObj, tags: item.tags, color: item.color})
     })
 	return outputArray
 }
@@ -87,7 +87,7 @@ function intersection(values){
     var outputArray = []
     values[0].forEach(item => {
         const intersectionObj = intersect(item.geometry, deserializedGeometry0)
-        outputArray.push({geometry: intersectionObj, tags: item.tags})
+        outputArray.push({geometry: intersectionObj, tags: item.tags, color: item.color})
     })
 	return outputArray
 }
@@ -103,7 +103,7 @@ function wrap(values){
     
     const hullObj = hull(builtArray)
     
-	return [{geometry: hullObj, tags: []}]
+	return [{geometry: hullObj, tags: [], color: "pink"}]
 }
 
 /*
@@ -113,32 +113,33 @@ function assembly(values){
     
     var inputs = values[0] //Inputs is an array of assemblies with the least dominant input first [[{},{},{}],[{},{}]]
     
-    var count = 0
-    inputs.forEach(input => {
-        input.forEach(item => {
-            count++;
-        })
-    })
-    
-    if(count > 10){
-        console.log("Assembly currently only supports up to ten arguments")
-        return -1
-    }
+    // var count = 0
+    // inputs.forEach(input => {
+        // input.forEach(item => {
+            // count++;
+        // })
+    // })
+    // console.log("Number of arguments to assembly: " + count)
+    // if(count > 10){
+        // console.log("Assembly currently only supports up to ten arguments")
+        // return -1
+    // }
+
     
     //Generate a subtracted array which contains geometry which has already had upstream inputs subtracted from it
-    var i = 0
-    while(i <= inputs.length - 2){
-        inputs[i].forEach(itemToSubtractFrom  => {       //Subtract all of the upstream input's items
-            var j = i + 1
-            while(j <= inputs.length - 1){               //Walk through each of the upstream inputs
-                inputs[j].forEach(itemToSubtract => {    //And subtract each of it's items
-                    itemToSubtractFrom.geometry = subtract(itemToSubtractFrom.geometry, itemToSubtract.geometry)
-                })
-                j++
-            }
-        })
-        i++
-    }
+    // var i = 0
+    // while(i <= inputs.length - 2){
+        // inputs[i].forEach(itemToSubtractFrom  => {       //Subtract all of the upstream input's items
+            // var j = i + 1
+            // while(j <= inputs.length - 1){               //Walk through each of the upstream inputs
+                // inputs[j].forEach(itemToSubtract => {    //And subtract each of it's items
+                    // itemToSubtractFrom.geometry = subtract(itemToSubtractFrom.geometry, itemToSubtract.geometry)
+                // })
+                // j++
+            // }
+        // })
+        // i++
+    // }
     
     //At this point inputs contains all of the geometry and it has been subtracted except the last input
     
@@ -160,12 +161,9 @@ function unon(values){
         })
     })
     const unionObj = union(arrayOfGeometry)
-    
-    var keptTags = tags.filter(item => {
-        return item.substring(2, 13) == "BOMitemName"
-    })
-    
-	return [{geometry: unionObj, tags: keptTags}]
+
+	return [{geometry: unionObj, tags: [], color: "pink"}]
+
 }
 
 function code(values){
@@ -227,22 +225,11 @@ function extractTag(values){
     return extractedItems;
 }
 
-//Just a placeholder for now
 function clr(values){
-    //Delete Spaces in colorName
-    var cssColor = values[1].replace(/ /g, "")
-    //Pass name into RGB
-    var chosenColor
-    if(cssColor == 'KeepOut'){
-        chosenColor = [1,0,0,.5]
-    }
-    else{
-        chosenColor = colorNameToRgb(cssColor)
-    }
+
     var coloredArray = []
     values[0].forEach(item => {
-        const coloredObj = colorize(chosenColor, item.geometry)
-        coloredArray.push({geometry: coloredObj, tags: item.tags})
+        coloredArray.push({geometry: item.geometry, tags: item.tags, color: values[1]})
     })
     return coloredArray
 }
@@ -257,7 +244,13 @@ function stl(values){
 
 function render(shape){
     try{
-        var solids = entitiesFromSolids({}, shape.map(x => x.geometry))
+        var solids = entitiesFromSolids({}, shape.map(shape => {
+            //Delete Spaces in colorName
+            var cssColor = shape.color.replace(/ /g, "")
+            //Pass name into RGB
+            var chosenColor = colorNameToRgb(cssColor)
+            return colorize(chosenColor, shape.geometry)
+        }))
     }
     catch(err){
         console.log(err)
