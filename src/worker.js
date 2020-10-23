@@ -22,7 +22,7 @@ const {
   transforms
 } = jscad
 
-const { cuboid, sphere, cylinder, circle, star, rectangle } = require('@jscad/modeling').primitives
+const { cuboid, sphere, cylinder, circle, star, rectangle, torus } = require('@jscad/modeling').primitives
 const { translate, rotate, scale } = transforms
 const { hull } = hulls
 const { union, subtract, intersect} = booleans
@@ -124,6 +124,7 @@ function assembly(values){
         // console.log("Assembly currently only supports up to ten arguments")
         // return -1
     // }
+
     
     //Generate a subtracted array which contains geometry which has already had upstream inputs subtracted from it
     // var i = 0
@@ -152,13 +153,17 @@ function assembly(values){
 
 function unon(values){
     var arrayOfGeometry = []
+    var tags = []
     values[0].forEach(input => {
         input.forEach(item => {
             arrayOfGeometry.push(item.geometry)
+            tags = tags.concat(item.tags)
         })
     })
     const unionObj = union(arrayOfGeometry)
+
 	return [{geometry: unionObj, tags: [], color: "pink"}]
+
 }
 
 function code(values){
@@ -176,6 +181,7 @@ function code(values){
     
     inputs["translate"] = translate
     inputs["sphere"] = sphere
+    inputs["torus"] = torus
     inputs["rotate"] = rotate
     inputs["scale"] = scale
     inputs["union"] = union
@@ -188,7 +194,9 @@ function code(values){
       Object.keys(inputs).join(', ') +
       ' }';
     const foo = new Function(signature, values[0]);
+    
     const returnedGeometry = foo({...inputs });
+    
     
 	return [{geometry: returnedGeometry, tags: []}]
 }
@@ -218,6 +226,7 @@ function extractTag(values){
 }
 
 function clr(values){
+
     var coloredArray = []
     values[0].forEach(item => {
         coloredArray.push({geometry: item.geometry, tags: item.tags, color: values[1]})
