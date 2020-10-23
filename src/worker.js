@@ -197,9 +197,8 @@ function code(values){
     
     const returnedGeometry = foo({...inputs });
     
-    
-	return [{geometry: returnedGeometry, tags: []}]
-}
+	return [{geometry: returnedGeometry, tags: [], color: "pink"}]
+
 
 //Just a placeholder for now
 function specify(values){
