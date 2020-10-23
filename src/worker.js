@@ -190,7 +190,7 @@ function code(values){
     const foo = new Function(signature, values[0]);
     const returnedGeometry = foo({...inputs });
     
-	return [{geometry: returnedGeometry, tags: []}]
+	return [{geometry: returnedGeometry, tags: [], color: "pink"}]
 }
 
 //Just a placeholder for now
