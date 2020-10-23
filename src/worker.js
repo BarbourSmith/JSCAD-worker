@@ -225,7 +225,13 @@ function clr(values){
     //Delete Spaces in colorName
     var cssColor = values[1].replace(/ /g, "")
     //Pass name into RGB
-    var chosenColor = colorNameToRgb(cssColor) 
+    var chosenColor
+    if(cssColor == 'KeepOut'){
+        chosenColor = [1,0,0,.5]
+    }
+    else{
+        chosenColor = colorNameToRgb(cssColor)
+    }
     var coloredArray = []
     values[0].forEach(item => {
         const coloredObj = colorize(chosenColor, item.geometry)
