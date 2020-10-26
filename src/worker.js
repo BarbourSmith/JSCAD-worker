@@ -27,6 +27,7 @@ const { translate, rotate, scale } = transforms
 const { hull } = hulls
 const { union, subtract, intersect} = booleans
 const { colorize, colorNameToRgb } = require('@jscad/modeling').colors
+const { measureBoundingBox } = require('@jscad/modeling').measurements
 const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/modeling').extrusions
 
 
@@ -47,15 +48,22 @@ function extr(values){
         if(item.circle){
             //Create a cylinder instead of an extrusion to avoid issues with extrude
             console.log("Circle seen")
-            extrudedObj = cylinder({height: values[1], radius: item.circle.radius, segments: item.circle.segments})
+            const bounds = measureBoundingBox(item.geometry)
+            const x = (bounds[1][0] - bounds[0][0])/2 + bounds[0][0]
+            const y = (bounds[1][1] - bounds[0][1])/2 + bounds[0][1]
+            extrudedObj = cylinder({center:[x,y,values[1]/2], height: values[1], radius: item.circle.radius, segments: item.circle.segments})
         }
-        if(item.rectangle){
+        else if(item.rectangle){
             console.log("Rectangle seen")
+            const bounds = measureBoundingBox(item.geometry)
+            const x = (bounds[1][0] - bounds[0][0])/2 + bounds[0][0]
+            const y = (bounds[1][1] - bounds[0][1])/2 + bounds[0][1]
             var size = item.rectangle.size
             size.push(values[1])
-            extrudedObj = cuboid({size: size})
+            extrudedObj = cuboid({center:[x,y,values[1]/2], size: size})
         }
         else{
+            console.log("Third option seen")
             const extrudedObj = extrudeLinear({height: values[1]}, item.geometry)
         }
         extrudedArray.push({geometry: extrudedObj, tags: item.tags, color: item.color})
@@ -75,8 +83,8 @@ function rotat(values){
 function trans(values){
     var translatedArray = []
     values[0].forEach(item => {
-        const translatedObj = translate([values[1],values[2],values[3]], item.geometry)
-        translatedArray.push({geometry: translatedObj, tags: item.tags, color: item.color})
+        item.geometry = translate([values[1],values[2],values[3]], item.geometry)
+        translatedArray.push(item)
     })
 	return translatedArray
 }
