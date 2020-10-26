@@ -32,18 +32,32 @@ const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/mod
 
 function circ(values){
 	var myCircle = circle({ radius: values[0]/2, segments: values[1]})
-	return [{geometry: myCircle, tags: [], color: "pink"}]
+	return [{geometry: myCircle, tags: [], color: "pink", circle: {radius: values[0]/2, segments: values[1]}}]
 }
 
 function rect(values){
 	var myCube = rectangle({size: values})
-	return [{geometry: myCube, tags: [], color: "pink"}]
+	return [{geometry: myCube, tags: [], color: "pink", rectangle: {size: values}}]
 }
 
 function extr(values){
     var extrudedArray = []
     values[0].forEach(item => {
-        const extrudedObj = extrudeLinear({height: values[1]}, item.geometry)
+        var extrudedObj
+        if(item.circle){
+            //Create a cylinder instead of an extrusion to avoid issues with extrude
+            console.log("Circle seen")
+            extrudedObj = cylinder({height: values[1], radius: item.circle.radius, segments: item.circle.segments})
+        }
+        if(item.rectangle){
+            console.log("Rectangle seen")
+            var size = item.rectangle.size
+            size.push(values[1])
+            extrudedObj = cuboid({size: size})
+        }
+        else{
+            const extrudedObj = extrudeLinear({height: values[1]}, item.geometry)
+        }
         extrudedArray.push({geometry: extrudedObj, tags: item.tags, color: item.color})
     })
 	return extrudedArray
@@ -198,6 +212,7 @@ function code(values){
     const returnedGeometry = foo({...inputs });
     
 	return [{geometry: returnedGeometry, tags: [], color: "pink"}]
+}
 
 
 //Just a placeholder for now
