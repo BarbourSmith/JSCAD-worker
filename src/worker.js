@@ -45,14 +45,14 @@ function extr(values){
     var extrudedArray = []
     values[0].forEach(item => {
         var extrudedObj
-        if(item.circle){
+        if(item.circle && values[1] > 0){
             //Create a cylinder instead of an extrusion to avoid issues with extrude
             const bounds = measureBoundingBox(item.geometry)
             const x = (bounds[1][0] - bounds[0][0])/2 + bounds[0][0]
             const y = (bounds[1][1] - bounds[0][1])/2 + bounds[0][1]
             extrudedObj = cylinder({center:[x,y,values[1]/2], height: values[1], radius: item.circle.radius, segments: item.circle.segments})
         }
-        else if(item.rectangle){
+        else if(item.rectangle && values[1] > 0){
             const bounds = measureBoundingBox(item.geometry)
             const x = (bounds[1][0] - bounds[0][0])/2 + bounds[0][0]
             const y = (bounds[1][1] - bounds[0][1])/2 + bounds[0][1]
