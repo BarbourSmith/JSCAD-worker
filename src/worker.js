@@ -47,14 +47,12 @@ function extr(values){
         var extrudedObj
         if(item.circle){
             //Create a cylinder instead of an extrusion to avoid issues with extrude
-            console.log("Circle seen")
             const bounds = measureBoundingBox(item.geometry)
             const x = (bounds[1][0] - bounds[0][0])/2 + bounds[0][0]
             const y = (bounds[1][1] - bounds[0][1])/2 + bounds[0][1]
             extrudedObj = cylinder({center:[x,y,values[1]/2], height: values[1], radius: item.circle.radius, segments: item.circle.segments})
         }
         else if(item.rectangle){
-            console.log("Rectangle seen")
             const bounds = measureBoundingBox(item.geometry)
             const x = (bounds[1][0] - bounds[0][0])/2 + bounds[0][0]
             const y = (bounds[1][1] - bounds[0][1])/2 + bounds[0][1]
@@ -63,8 +61,7 @@ function extr(values){
             extrudedObj = cuboid({center:[x,y,values[1]/2], size: size})
         }
         else{
-            console.log("Third option seen")
-            const extrudedObj = extrudeLinear({height: values[1]}, item.geometry)
+            extrudedObj = extrudeLinear({height: values[1]}, item.geometry)
         }
         extrudedArray.push({geometry: extrudedObj, tags: item.tags, color: item.color})
     })
@@ -74,8 +71,8 @@ function extr(values){
 function rotat(values){
     var rotatedArray = []
     values[0].forEach(item => {
-        const rotatedObj = rotate([3.1415*values[1]/180,3.1415*values[2]/180,3.1415*values[3]/180], item.geometry)
-        rotatedArray.push({geometry: rotatedObj, tags: item.tags, color: item.color})
+        item.geometry =  rotate([3.1415*values[1]/180,3.1415*values[2]/180,3.1415*values[3]/180], item.geometry)
+        rotatedArray.push(item)
     })
 	return rotatedArray
 }
