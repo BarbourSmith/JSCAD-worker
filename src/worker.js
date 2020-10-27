@@ -297,7 +297,6 @@ function render(shape){
             else{
                 chosenColor = colorNameToRgb(cssColor)
             }
-            var chosenColor = colorNameToRgb(cssColor)
             return colorize(chosenColor, shape.geometry)
         }))
     }
