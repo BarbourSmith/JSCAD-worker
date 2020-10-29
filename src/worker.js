@@ -290,7 +290,13 @@ function render(shape){
             //Delete Spaces in colorName
             var cssColor = shape.color.replace(/ /g, "")
             //Pass name into RGB
-            var chosenColor = colorNameToRgb(cssColor)
+            var chosenColor
+            if(cssColor == 'KeepOut'){
+                chosenColor = [1,0,0,.5]
+            }
+            else{
+                chosenColor = colorNameToRgb(cssColor)
+            }
             return colorize(chosenColor, shape.geometry)
         }))
     }
