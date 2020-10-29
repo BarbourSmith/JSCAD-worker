@@ -23,8 +23,10 @@ const {
 } = jscad
 
 const { cuboid, sphere, cylinder, circle, star, rectangle, torus } = require('@jscad/modeling').primitives
+const { poly2, geom2 } = require('@jscad/modeling').geometries
 const { translate, rotate, scale } = transforms
 const { hull } = hulls
+const { vec2 } = require('@jscad/modeling').maths
 const { union, subtract, intersect} = booleans
 const { colorize, colorNameToRgb } = require('@jscad/modeling').colors
 const { measureBoundingBox } = require('@jscad/modeling').measurements
@@ -199,6 +201,7 @@ function code(values){
     //These actions are available in the context that the code is executed in
     
     inputs["translate"] = translate
+    inputs["extrudeLinear"] = extrudeLinear
     inputs["sphere"] = sphere
     inputs["torus"] = torus
     inputs["rotate"] = rotate
@@ -206,6 +209,9 @@ function code(values){
     inputs["union"] = union
     inputs["subtract"] = subtract
     inputs["intersect"] = intersect
+    inputs["vec2"] = vec2
+    inputs["poly2"] = poly2
+    inputs["geom2"] = geom2
     
     //Evaluate the code in the created context
     const signature =
