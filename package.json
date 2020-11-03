@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@jscad/modeling": "^2.0.0-alpha.5",
+    "@jscad/modeling": "^2.0.0-alpha.6",
     "@jscad/regl-renderer": "^2.0.0-alpha.8",
     "@jscad/stl-serializer": "^2.0.0-alpha.6",
     "@webpack-cli/init": "^0.2.2",
