@@ -23,27 +23,48 @@ const {
 } = jscad
 
 const { cuboid, sphere, cylinder, circle, star, rectangle, torus } = require('@jscad/modeling').primitives
+const { poly2, geom2 } = require('@jscad/modeling').geometries
 const { translate, rotate, scale } = transforms
 const { hull } = hulls
+const { vec2 } = require('@jscad/modeling').maths
 const { union, subtract, intersect} = booleans
 const { colorize, colorNameToRgb } = require('@jscad/modeling').colors
+const { measureBoundingBox } = require('@jscad/modeling').measurements
 const { extrudeLinear, extrudeRectangular, extrudeRotate } = require('@jscad/modeling').extrusions
 
 
 function circ(values){
 	var myCircle = circle({ radius: values[0]/2, segments: values[1]})
-	return [{geometry: myCircle, tags: [], color: "pink"}]
+	return [{geometry: myCircle, tags: [], color: "pink", circle: {radius: values[0]/2, segments: values[1]}}]
 }
 
 function rect(values){
 	var myCube = rectangle({size: values})
-	return [{geometry: myCube, tags: [], color: "pink"}]
+	return [{geometry: myCube, tags: [], color: "pink", rectangle: {size: values}}]
 }
 
 function extr(values){
     var extrudedArray = []
     values[0].forEach(item => {
-        const extrudedObj = extrudeLinear({height: values[1]}, item.geometry)
+        var extrudedObj
+        if(item.circle && values[1] > 0){
+            //Create a cylinder instead of an extrusion to avoid issues with extrude
+            const bounds = measureBoundingBox(item.geometry)
+            const x = (bounds[1][0] - bounds[0][0])/2 + bounds[0][0]
+            const y = (bounds[1][1] - bounds[0][1])/2 + bounds[0][1]
+            extrudedObj = cylinder({center:[x,y,values[1]/2], height: values[1], radius: item.circle.radius, segments: item.circle.segments})
+        }
+        else if(item.rectangle && values[1] > 0){
+            const bounds = measureBoundingBox(item.geometry)
+            const x = (bounds[1][0] - bounds[0][0])/2 + bounds[0][0]
+            const y = (bounds[1][1] - bounds[0][1])/2 + bounds[0][1]
+            var size = item.rectangle.size
+            size.push(values[1])
+            extrudedObj = cuboid({center:[x,y,values[1]/2], size: size})
+        }
+        else{
+            extrudedObj = extrudeLinear({height: values[1]}, item.geometry)
+        }
         extrudedArray.push({geometry: extrudedObj, tags: item.tags, color: item.color})
     })
 	return extrudedArray
@@ -52,8 +73,8 @@ function extr(values){
 function rotat(values){
     var rotatedArray = []
     values[0].forEach(item => {
-        const rotatedObj = rotate([3.1415*values[1]/180,3.1415*values[2]/180,3.1415*values[3]/180], item.geometry)
-        rotatedArray.push({geometry: rotatedObj, tags: item.tags, color: item.color})
+        item.geometry =  rotate([3.1415*values[1]/180,3.1415*values[2]/180,3.1415*values[3]/180], item.geometry)
+        rotatedArray.push(item)
     })
 	return rotatedArray
 }
@@ -61,8 +82,8 @@ function rotat(values){
 function trans(values){
     var translatedArray = []
     values[0].forEach(item => {
-        const translatedObj = translate([values[1],values[2],values[3]], item.geometry)
-        translatedArray.push({geometry: translatedObj, tags: item.tags, color: item.color})
+        item.geometry = translate([values[1],values[2],values[3]], item.geometry)
+        translatedArray.push(item)
     })
 	return translatedArray
 }
@@ -180,6 +201,7 @@ function code(values){
     //These actions are available in the context that the code is executed in
     
     inputs["translate"] = translate
+    inputs["extrudeLinear"] = extrudeLinear
     inputs["sphere"] = sphere
     inputs["torus"] = torus
     inputs["rotate"] = rotate
@@ -187,6 +209,9 @@ function code(values){
     inputs["union"] = union
     inputs["subtract"] = subtract
     inputs["intersect"] = intersect
+    inputs["vec2"] = vec2
+    inputs["poly2"] = poly2
+    inputs["geom2"] = geom2
     
     //Evaluate the code in the created context
     const signature =
@@ -198,6 +223,7 @@ function code(values){
     const returnedGeometry = foo({...inputs });
     
 	return [{geometry: returnedGeometry, tags: [], color: "pink"}]
+}
 
 
 //Just a placeholder for now
@@ -264,7 +290,13 @@ function render(shape){
             //Delete Spaces in colorName
             var cssColor = shape.color.replace(/ /g, "")
             //Pass name into RGB
-            var chosenColor = colorNameToRgb(cssColor)
+            var chosenColor
+            if(cssColor == 'KeepOut'){
+                chosenColor = [1,0,0,.5]
+            }
+            else{
+                chosenColor = colorNameToRgb(cssColor)
+            }
             return colorize(chosenColor, shape.geometry)
         }))
     }
