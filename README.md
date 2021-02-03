@@ -1,7 +1,3 @@
-# To bundle
-
-1) Run the command "webpack"
-
 # To install this project you need to: 
 
 1) Delete all the references @jscad in package.json
@@ -15,3 +11,8 @@ npm install @jscad/regl-renderer@alpha
 ```
 
 This will install the alpha version of jscad
+
+# To bundle
+
+1) Run the command "webpack"
+
